@@ -1,0 +1,4 @@
+.fa-review { display: flex; gap: 8px; margin-top: 12px; }
+.fa-review button { border: 0; border-radius: 18px; background: #574aa7; color: #fff; padding: 9px 16px; }
+.fa-review .reject { background: #ffeded; color: #d33; }
+.fa-review button:disabled { opacity: .55; }
