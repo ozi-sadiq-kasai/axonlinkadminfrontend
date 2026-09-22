@@ -6,6 +6,35 @@ function isLocalApiUrl(value) {
 
 let accessToken = "";
 let currentAdmin = null;
+const REQUEST_TIMEOUT_MS = 15000;
+const RETRY_DELAYS_MS = [400, 1000];
+
+const emitNetworkState = (online) => window.dispatchEvent(new CustomEvent("axonlink:network", { detail: { online } }));
+
+async function fetchWithResilience(url, options, retryable) {
+  let lastError;
+  const attempts = retryable ? RETRY_DELAYS_MS.length + 1 : 1;
+  for (let attempt = 0; attempt < attempts; attempt += 1) {
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
+    try {
+      const response = await fetch(url, { ...options, signal: controller.signal });
+      clearTimeout(timer);
+      emitNetworkState(true);
+      if (retryable && response.status >= 500 && attempt < attempts - 1) {
+        await new Promise((resolve) => setTimeout(resolve, RETRY_DELAYS_MS[attempt]));
+        continue;
+      }
+      return response;
+    } catch (error) {
+      clearTimeout(timer);
+      lastError = error;
+      emitNetworkState(false);
+      if (attempt < attempts - 1) await new Promise((resolve) => setTimeout(resolve, RETRY_DELAYS_MS[attempt]));
+    }
+  }
+  throw lastError;
+}
 
 export class ApiError extends Error {
   constructor(message, status, details) {
@@ -39,12 +68,12 @@ async function request(path, { method = "GET", body, authenticated = false, retr
 
   let response;
   try {
-    response = await fetch(`${API_BASE_URL}${path}`, {
+    response = await fetchWithResilience(`${API_BASE_URL}${path}`, {
       method,
       headers,
       credentials: "include",
       body: body === undefined ? undefined : JSON.stringify(body),
-    });
+    }, method === "GET");
   } catch {
     const message = isLocalApiUrl(API_BASE_URL)
       ? "The local Axonlink Admin service is not available yet. Start the Admin backend, then try again."
