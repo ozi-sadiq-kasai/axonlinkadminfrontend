@@ -1,4 +1,7 @@
 const API_BASE_URL = (import.meta.env.VITE_ADMIN_API_URL || "http://localhost:5040").replace(/\/$/, "");
+export const listDeletionRequests = (status = "", page = 1) => request(`/api/deletion-requests?${new URLSearchParams({ status, page: String(page) })}`, { authenticated: true });
+export const getDeletionRequest = id => request(`/api/deletion-requests/${encodeURIComponent(id)}`, { authenticated: true });
+export const updateDeletionRequest = (id, body) => request(`/api/deletion-requests/${encodeURIComponent(id)}`, { method: "PATCH", body, authenticated: true });
 
 function isLocalApiUrl(value) {
   return /^https?:\/\/(?:localhost|127\.0\.0\.1)(?::\d+)?$/i.test(value);

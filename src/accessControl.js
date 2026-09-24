@@ -1,5 +1,5 @@
 export const ROLE_SCREEN_ACCESS = Object.freeze({
-  SUPER_ADMIN: ["dashboard", "users", "referrals", "activities", "reports", "role-access", "system-control", "communication", "profile"],
+  SUPER_ADMIN: ["dashboard", "users", "referrals", "activities", "reports", "role-access", "system-control", "communication", "profile", "deletion-requests"],
   ADMIN: ["dashboard", "referrals", "activities", "communication", "profile"],
   SUPPORT: ["dashboard", "users", "activities", "communication", "profile"],
   AUDITOR: ["dashboard", "users", "system-control", "profile"],

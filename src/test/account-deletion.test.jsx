@@ -1,0 +1,30 @@
+import React from 'react';
+import { render,screen,fireEvent,waitFor } from '@testing-library/react';
+import { beforeEach,afterEach,expect,it,vi } from 'vitest';
+const api=vi.hoisted(()=>({listDeletionRequests:vi.fn(),getDeletionRequest:vi.fn(),updateDeletionRequest:vi.fn()}));
+vi.mock('../authentication/authApi',()=>api);
+import DeletionRequests from '../DeletionRequests/DeletionRequests';
+import AccountDeletionLink from '../AccountDeletionLink';
+import {canAccessScreen} from '../accessControl';
+const request={id:'reference',email:'person@example.com',scope:'PERSONAL',status:'SUBMITTED',version:1,events:[],verifiedAt:'2026-09-24T12:00:00Z'};
+beforeEach(()=>{vi.clearAllMocks();api.listDeletionRequests.mockResolvedValue({requests:[request],total:1,pageSize:25});api.getDeletionRequest.mockResolvedValue({request});});
+afterEach(()=>vi.unstubAllEnvs());
+it('restricts request review to the Super Admin',()=>{for(const role of ['ADMIN','SUPPORT','AUDITOR',undefined])expect(canAccessScreen(role,'deletion-requests')).toBe(false);expect(canAccessScreen('SUPER_ADMIN','deletion-requests')).toBe(true);});
+it('shows real empty results',async()=>{api.listDeletionRequests.mockResolvedValue({requests:[],total:0,pageSize:25});render(<DeletionRequests onNavigate={()=>{}}/>);expect(await screen.findByText('No requests match this filter.')).toBeInTheDocument();});
+it('starts a review with the version and requester message; completion is unavailable before review',async()=>{
+ api.updateDeletionRequest.mockResolvedValue({request:{...request,status:'IN_REVIEW',version:2}});
+ render(<DeletionRequests onNavigate={()=>{}}/>);fireEvent.click(await screen.findByText(request.email));
+ expect(await screen.findByRole('option',{name:'Record completed processing'})).toBeDisabled();
+ fireEvent.change(screen.getByLabelText('Message emailed to the requester (no internal notes or clinical details)'),{target:{value:'We are reviewing your request.'}});
+ fireEvent.click(screen.getByRole('button',{name:'Save review and queue email update'}));
+ await waitFor(()=>expect(api.updateDeletionRequest).toHaveBeenCalledWith('reference',expect.objectContaining({status:'IN_REVIEW',version:1,message:'We are reviewing your request.'})));
+ await waitFor(()=>expect(screen.getByRole('option',{name:'Record completed processing'})).not.toBeDisabled());
+ fireEvent.change(screen.getByLabelText('Next status'),{target:{value:'COMPLETED'}});
+ expect(screen.getByText(/does not delete accounts, files, sessions or medical records/)).toBeInTheDocument();
+ expect(screen.getByLabelText('Retention review date')).toBeRequired();
+});
+it('uses the configured admin backend public redirect and fails visibly without configuration',()=>{
+ vi.stubEnv('VITE_ADMIN_API_URL','https://admin.example.com/api?ignored=true');const view=render(<AccountDeletionLink/>);
+ expect(screen.getByRole('link')).toHaveAttribute('href','https://admin.example.com/account-deletion');
+ vi.stubEnv('VITE_ADMIN_API_URL','');view.rerender(<AccountDeletionLink/>);expect(screen.queryByRole('link')).toBeNull();expect(screen.getByText(/not configured/)).toBeInTheDocument();
+});

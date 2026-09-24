@@ -1,3 +1,4 @@
+import AccountDeletionLink from "../AccountDeletionLink";
 import { useEffect, useRef, useState } from "react";
 import illustration from "./assets/admin-signin-illustration.svg";
 import axonlinkMark from "./assets/axonlink-mark.svg";
@@ -193,6 +194,7 @@ function LoginScreen({ onForgotPassword, onLogin }) {
             {message}
           </p>
         </form>
+        <AccountDeletionLink compact />
       </section>
     </main>
   );

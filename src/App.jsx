@@ -12,6 +12,7 @@ import SystemControl from "./SystemControl/SystemControl";
 import Communication from "./Communication/Communication";
 import Profile from "./Profile/Profile";
 import Reports from "./Reports/Reports";
+import DeletionRequests from "./DeletionRequests/DeletionRequests";
 import { canAccessScreen } from "./accessControl";
 
 class ScreenErrorBoundary extends Component {
@@ -44,7 +45,7 @@ class ScreenErrorBoundary extends Component {
 
 function App() {
   const [screen, setScreen] = useState(() => new URLSearchParams(window.location.search).get("screen"));
-  const protectedScreen = screen === "dashboard" || screen === "role-access" || screen === "patients" || screen === "specialists" || screen === "facilities" || screen === "activities" || screen === "referrals" || screen === "system-control" || screen === "communication" || screen === "profile" || screen === "reports";
+  const protectedScreen = screen === "dashboard" || screen === "role-access" || screen === "patients" || screen === "specialists" || screen === "facilities" || screen === "activities" || screen === "referrals" || screen === "system-control" || screen === "communication" || screen === "profile" || screen === "reports" || screen === "deletion-requests";
   const [dashboardAccess, setDashboardAccess] = useState(
     protectedScreen ? "checking" : "not-needed",
   );
@@ -105,6 +106,7 @@ function App() {
   if (screen === "dashboard" && dashboardAccess === "allowed") {
     return <Dashboard currentAdmin={currentAdmin} onNavigate={navigate} />;
   }
+  if (screen === "deletion-requests" && dashboardAccess === "allowed") return <ScreenErrorBoundary><DeletionRequests onNavigate={navigate} /></ScreenErrorBoundary>;
 
   if (screen === "role-access" && dashboardAccess === "allowed") {
     return <ScreenErrorBoundary><RoleAccess currentAdmin={currentAdmin} onNavigate={navigate} /></ScreenErrorBoundary>;

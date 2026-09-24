@@ -12,6 +12,7 @@ const navigation = [
 ];
 
 const settings = [
+  { screen: "deletion-requests", label: "Deletion Requests", icon: "▤" },
   { screen: "role-access", label: "Role & Access", icon: "♙" },
   { screen: "system-control", label: "System Control", icon: "▣" },
   { screen: "communication", label: "Communication", icon: "♧" },
