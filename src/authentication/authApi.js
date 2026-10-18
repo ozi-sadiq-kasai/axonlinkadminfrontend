@@ -258,3 +258,7 @@ export function getAdminNotifications(mode="ALL") { return request(`/api/profile
 export function readAdminNotification(id) { return request(`/api/profile/notifications/${encodeURIComponent(id)}/read`, { method:"PATCH", authenticated:true }); }
 export function deleteAdminNotification(id) { return request(`/api/profile/notifications/${encodeURIComponent(id)}`, { method:"DELETE", authenticated:true }); }
 export function getAppReports() { return request("/api/app/reports", { authenticated:true }); }
+
+export function getDashboard() {
+  return request("/api/app/dashboard", { authenticated: true });
+}
