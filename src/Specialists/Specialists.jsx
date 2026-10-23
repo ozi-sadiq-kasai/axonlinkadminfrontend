@@ -1,3 +1,4 @@
+import ClassificationRequests from "./ClassificationRequests";
 import { useEffect, useMemo, useState } from "react";
 import { getAppSpecialist, getAppSpecialists, grantAppPatientRecordAccess, reviewAppSpecialistDocument, revokeAppPatientRecordAccess } from "../authentication/authApi";
 import "./specialists.css";
@@ -30,10 +31,12 @@ function ReferralDrawer({ referral, onClose }) {
 }
 
 function SpecialistList({ currentAdmin, onNavigate, onSelect }) {
+  const [classificationReview, setClassificationReview] = useState(false);
   const [data, setData] = useState(null); const [search, setSearch] = useState(""); const [error, setError] = useState("");
   useEffect(() => { let live = true; const timer = setTimeout(() => getAppSpecialists({ search }).then((value) => live && setData(value)).catch((e) => live && setError(e.message)), 180); return () => { live = false; clearTimeout(timer); }; }, [search]);
   const overview = data?.overview || {};
-  return <Shell currentAdmin={currentAdmin} onNavigate={onNavigate} pageTitle="Specialist"><div className="sp-content">
+  if (classificationReview && currentAdmin?.role === "SUPER_ADMIN") return <Shell currentAdmin={currentAdmin} onNavigate={onNavigate} pageTitle="Classification Change Requests"><div className="sp-content"><ClassificationRequests onBack={() => setClassificationReview(false)} /></div></Shell>;
+  return <Shell currentAdmin={currentAdmin} onNavigate={onNavigate} pageTitle="Specialist"><div className="sp-content">{currentAdmin?.role === "SUPER_ADMIN" && <button onClick={() => setClassificationReview(true)}>Classification change requests</button>}
     <section className="sp-card"><div className="sp-heading"><h2>Overview</h2><input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search specialist" /></div><div className="sp-metrics">{[["Total Specialist", overview.total], ["New Sign-Up", overview.newSignups], ["Active Specialist", overview.active], ["Inactive Specialist", overview.inactive], ["Suspended / Restricted", overview.suspended], ["Unverified", overview.unverified], ["Male", overview.male], ["Female", overview.female]].map(([label, value]) => <div key={label}><span>{label}</span><b>{value ?? "—"}</b></div>)}</div></section>
     {error && <p className="sp-error">{error}</p>}
     <section className="sp-card"><h2>Specialists</h2>{data?.specialists?.length ? <div className="sp-table"><b>Name</b><b>Facility</b><b>Specialty</b><b>Sex</b><b>Status</b><b />{data.specialists.map((sp) => <div className="sp-row" key={sp.id}><span className="sp-person"><i>{initials(sp)}</i><span><strong>{sp.firstName} {sp.lastName}</strong><small>{sp.email}</small></span></span><span>{sp.facility?.name || "No facility"}<small>{[sp.facility?.city, sp.facility?.state].filter(Boolean).join(", ")}</small></span><span>{sp.specialty || "Not provided"}</span><span>{sp.gender || "—"}</span><em className={`state ${sp.status}`}>{title(sp.status)}</em><button onClick={() => onSelect(sp.id)}>View Profile</button></div>)}</div> : <Empty text={data ? "No specialists found" : "Loading specialists…"} />}</section>

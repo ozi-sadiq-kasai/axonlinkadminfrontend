@@ -262,3 +262,10 @@ export function getAppReports() { return request("/api/app/reports", { authentic
 export function getDashboard() {
   return request("/api/app/dashboard", { authenticated: true });
 }
+
+export function getClassificationRequests() {
+  return request('/api/app/classification-requests', { authenticated: true });
+}
+export function reviewClassificationRequest(id, details) {
+  return request(`/api/app/classification-requests/${encodeURIComponent(id)}/review`, { method: 'POST', body: details, authenticated: true });
+}
