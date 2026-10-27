@@ -12,6 +12,7 @@ export function permissionScreen(screen) {
 }
 
 export function canAccessScreen(role, screen) {
+  if (screen === "allied-medical-officers") return role === "SUPER_ADMIN";
   return Boolean(role && ROLE_SCREEN_ACCESS[role]?.includes(permissionScreen(screen)));
 }
 

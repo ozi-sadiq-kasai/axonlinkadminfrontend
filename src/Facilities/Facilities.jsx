@@ -1,3 +1,4 @@
+import { classificationDisplayLabel } from "../utils/classificationDisplay";
 import { useEffect as useReactEffect, useState } from "react";
 import {
   getAppFacilities,
@@ -364,7 +365,7 @@ function Profile({ currentAdmin, onNavigate, id, onBack }) {
                   staff.filter((s) => classFor(s) === "SPECIALIST").length,
                 ],
                 [
-                  "Generalist Clinicians",
+                  "Medical Officers",
                   staff.filter((s) => classFor(s) === "GENERALIST").length,
                 ],
                 [
@@ -386,7 +387,7 @@ function Profile({ currentAdmin, onNavigate, id, onBack }) {
                     onClick={() => setStaffTab(t)}
                     key={t}
                   >
-                    {title(t)}
+                    {classificationDisplayLabel(t) === t ? title(t) : classificationDisplayLabel(t)}
                   </button>
                 ),
               )}
@@ -425,7 +426,7 @@ function Profile({ currentAdmin, onNavigate, id, onBack }) {
                       Dr. {s.clinician.firstName} {s.clinician.lastName}
                     </span>
                     <span>
-                      {s.role || s.clinician.specialty || "Clinician"}
+                      {classificationDisplayLabel(s.role || s.clinician.specialty || "Clinician")}
                     </span>
                     <em className={s.status}>{title(s.status)}</em>
                   </div>

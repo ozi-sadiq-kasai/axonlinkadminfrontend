@@ -14,12 +14,12 @@ const RETRY_DELAYS_MS = [400, 1000];
 
 const emitNetworkState = (online) => window.dispatchEvent(new CustomEvent("axonlink:network", { detail: { online } }));
 
-async function fetchWithResilience(url, options, retryable) {
+async function fetchWithResilience(url, options, retryable, timeoutMs = REQUEST_TIMEOUT_MS) {
   let lastError;
   const attempts = retryable ? RETRY_DELAYS_MS.length + 1 : 1;
   for (let attempt = 0; attempt < attempts; attempt += 1) {
     const controller = new AbortController();
-    const timer = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
+    const timer = setTimeout(() => controller.abort(), timeoutMs);
     try {
       const response = await fetch(url, { ...options, signal: controller.signal });
       clearTimeout(timer);
@@ -64,7 +64,7 @@ async function readResponse(response) {
   return response.json();
 }
 
-async function request(path, { method = "GET", body, authenticated = false, retry = true } = {}) {
+async function request(path, { method = "GET", body, authenticated = false, retry = true, timeoutMs = REQUEST_TIMEOUT_MS } = {}) {
   const headers = { Accept: "application/json" };
   if (body !== undefined) headers["Content-Type"] = "application/json";
   if (authenticated && accessToken) headers.Authorization = `Bearer ${accessToken}`;
@@ -76,8 +76,9 @@ async function request(path, { method = "GET", body, authenticated = false, retr
       headers,
       credentials: "include",
       body: body === undefined ? undefined : JSON.stringify(body),
-    }, method === "GET");
-  } catch {
+    }, method === "GET", timeoutMs);
+  } catch (error) {
+    if (error?.name === "AbortError" || error?.name === "TimeoutError") throw new ApiError("The request timed out while waiting for Axonlink. Please retry.", 0);
     const message = isLocalApiUrl(API_BASE_URL)
       ? "The local Axonlink Admin service is not available yet. Start the Admin backend, then try again."
       : "Unable to reach the Axonlink Admin service. Please try again.";
@@ -86,7 +87,7 @@ async function request(path, { method = "GET", body, authenticated = false, retr
 
   if (response.status === 401 && authenticated && retry) {
     const restored = await refreshSession().catch(() => null);
-    if (restored) return request(path, { method, body, authenticated, retry: false });
+    if (restored) return request(path, { method, body, authenticated, retry: false, timeoutMs });
   }
 
   const payload = await readResponse(response);
@@ -260,12 +261,20 @@ export function deleteAdminNotification(id) { return request(`/api/profile/notif
 export function getAppReports() { return request("/api/app/reports", { authenticated:true }); }
 
 export function getDashboard() {
-  return request("/api/app/dashboard", { authenticated: true });
+  return request("/api/app/dashboard", { authenticated: true, timeoutMs: import.meta.env.DEV ? 40000 : 25000 });
 }
 
-export function getClassificationRequests() {
-  return request('/api/app/classification-requests', { authenticated: true });
+export function getClassificationRequests(status = "PENDING_REVIEW") {
+  return request(`/api/app/classification-requests?status=${encodeURIComponent(status)}`, { authenticated: true });
 }
 export function reviewClassificationRequest(id, details) {
   return request(`/api/app/classification-requests/${encodeURIComponent(id)}/review`, { method: 'POST', body: details, authenticated: true });
 }
+
+export function getClassificationRequest(id) {
+  return request(`/api/app/classification-requests/${encodeURIComponent(id)}`, { authenticated:true });
+}
+
+export function getAppAlliedMedicalOfficers() { return request("/api/app/allied-medical-officers", { authenticated: true }); }
+export function getAppAlliedMedicalOfficer(id) { return request(`/api/app/allied-medical-officers/${encodeURIComponent(id)}`, { authenticated: true }); }
+export function reviewAppAlliedMedicalOfficer(id, details) { return request(`/api/app/allied-medical-officers/${encodeURIComponent(id)}/review`, { method: "POST", body: details, authenticated: true }); }

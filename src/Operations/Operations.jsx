@@ -1,3 +1,4 @@
+import { classificationDisplayLabel } from "../utils/classificationDisplay";
 import { useEffect, useState } from "react";
 import { endAppActivityConsultation, getAppActivities, getAppActivityAppointment, getAppReferral, getAppReferrals } from "../authentication/authApi";
 import "./operations.css";
@@ -14,7 +15,7 @@ function Shell({ currentAdmin, onNavigate, active, children }) {
   return <div className="op-shell"><aside><div className="op-logo">axonl<span>i</span>nk</div><small>MAIN</small>{item("dashboard", "Dashboard", "▦")} {item("patients", "Users", "♧")} {item("referrals", "Referrals", "⇄")} {item("activities", "Activities", "⬡")}{item("reports", "Reports", "▥")}<small>SETTINGS</small>{item("role-access", "Role & Access", "♙")}{item("system-control", "System Control", "▣")}{item("communication", "Communication", "⌁")}<div className="op-admin"><i>{initials(currentAdmin)}</i><span><b>{currentAdmin?.firstName} {currentAdmin?.lastName}</b><small>{title(currentAdmin?.role)}</small></span></div></aside><main><header><h1>{active === "activities" ? "Activities" : "Referral"}</h1><label>⌕ <input placeholder="Looking for something..." /></label><b>{currentAdmin?.firstName} {currentAdmin?.lastName}</b></header>{children}</main></div>;
 }
 
-function Person({ value, doctor = false }) { return <span className="op-person"><i>{initials(value)}</i><span><b>{doctor ? "Dr. " : ""}{value?.firstName} {value?.lastName}</b>{value?.displayId && <small>{value.displayId}</small>}{value?.specialty && <small>{value.specialty}</small>}</span></span>; }
+function Person({ value, doctor = false }) { return <span className="op-person"><i>{initials(value)}</i><span><b>{doctor ? "Dr. " : ""}{value?.firstName} {value?.lastName}</b>{value?.displayId && <small>{value.displayId}</small>}{value?.specialty && <small>{classificationDisplayLabel(value.specialty)}</small>}</span></span>; }
 function Facility({ value }) { return value ? <span className="op-person"><i>{value.name?.[0]}</i><span><b>{value.name}</b><small>{[value.city, value.state].filter(Boolean).join(", ")}</small></span></span> : <span>Not recorded</span>; }
 function Empty({ text }) { return <div className="op-empty">{text}</div>; }
 
