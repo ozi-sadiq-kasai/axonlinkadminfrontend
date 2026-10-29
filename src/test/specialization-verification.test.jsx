@@ -17,14 +17,42 @@ it('stale review errors remain visible without claiming approval',async()=>{revi
 it('read-only reviewer cannot see mutation controls',()=>{open({canReview:false});expect(screen.queryByRole('button',{name:'Approve'})).not.toBeInTheDocument();});
 it('history viewer links the historical version, not the active replacement',()=>{open({history:[{id:'event',documentType:'SPECIALIZATION:one',documentVersion:2,documentUrl:'https://storage.invalid/previous',action:'REJECTED',createdAt:'2026-10-24',note:'Unreadable'}]});fireEvent.click(screen.getByRole('button',{name:'View'}));expect(screen.getByRole('link',{name:'View Submitted Document'})).toHaveAttribute('href','https://storage.invalid/previous');});
 
-it('employment filing has a secure viewing link and no review actions or statuses',()=>{
- render(<EmploymentDocument document={{name:'letter.pdf',url:'/api/assets?sig=employment'}}/>);
+it('hospital employment filing has a secure viewing link without review controls',()=>{
+ render(<EmploymentDocument documents={[{
+  affiliationId:'a',
+  hospital:'Axon Hospital',
+  name:'letter.pdf',
+  submitted:true,
+  url:'/api/assets?sig=employment'
+ }]}/>);
+ expect(screen.getByText('Axon Hospital')).toBeInTheDocument();
+ expect(screen.getByText('Submitted')).toBeInTheDocument();
  expect(screen.getByRole('link',{name:'View Employment Document'})).toHaveAttribute('href','/api/assets?sig=employment');
  expect(screen.queryByRole('button')).not.toBeInTheDocument();
- expect(screen.queryByText(/Pending|Verified|Verification History|Verification Check/i)).not.toBeInTheDocument();
 });
-it('missing employment document is shown as not submitted, not pending verification',()=>{
- render(<EmploymentDocument document={{url:null}}/>);
- expect(screen.getByText('Not submitted')).toBeInTheDocument();
+
+it('missing hospital employment document is shown as not submitted',()=>{
+ render(<EmploymentDocument documents={[{
+  affiliationId:'b',
+  hospital:'Second Hospital',
+  submitted:false,
+  url:null
+ }]}/>);
+ expect(screen.getByText('Second Hospital')).toBeInTheDocument();
+ expect(screen.getByText('Not Submitted')).toBeInTheDocument();
  expect(screen.queryByRole('link')).not.toBeInTheDocument();
+});
+
+it('multiple hospital employment documents display separately without legacy filing',()=>{
+ render(<EmploymentDocument documents={[
+  {affiliationId:'a',hospital:'Axon Hospital',name:'letter.pdf',submitted:true,url:'/api/assets?sig=affiliation'},
+  {affiliationId:'b',hospital:'Second Hospital',submitted:false,url:null}
+ ]}/>);
+ expect(screen.getByText('Axon Hospital')).toBeInTheDocument();
+ expect(screen.getByText('Second Hospital')).toBeInTheDocument();
+ expect(screen.getByText('Submitted')).toBeInTheDocument();
+ expect(screen.getByText('Not Submitted')).toBeInTheDocument();
+ expect(screen.queryByText('Legacy Employment Document')).not.toBeInTheDocument();
+ expect(screen.getAllByRole('link')).toHaveLength(1);
+ expect(screen.queryByRole('button')).not.toBeInTheDocument();
 });

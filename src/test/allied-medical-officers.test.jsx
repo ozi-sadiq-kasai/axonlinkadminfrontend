@@ -18,7 +18,7 @@ it('stale version rejection stays visible for refresh rather than claiming appro
 it('route permission matches existing Allied Super Admin authorization',()=>{expect(canAccessScreen('SUPER_ADMIN','allied-medical-officers')).toBe(true);for(const role of ['ADMIN','SUPPORT','AUDITOR',null])expect(canAccessScreen(role,'allied-medical-officers')).toBe(false);expect(canAccessScreen('SUPPORT','specialists')).toBe(true);});
 
 it('shows employment filing separately from professional review',async()=>{
- api.detail.mockResolvedValue({clinician,credential,employmentDocument:{name:'letter.pdf',url:'https://files.invalid/employment-signed'}});
+ api.detail.mockResolvedValue({clinician,credential,employmentDocuments:[{affiliationId:'hospital-1',hospital:'Axon Hospital',name:'letter.pdf',submitted:true,url:'https://files.invalid/employment-signed'}]});
  open();fireEvent.click(await screen.findByRole('button',{name:'View Profile'}));
  expect(await screen.findByRole('link',{name:'View Employment Document'})).toHaveAttribute('href','https://files.invalid/employment-signed');
  expect(api.review).not.toHaveBeenCalled();

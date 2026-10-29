@@ -25,7 +25,7 @@ function AlliedProfile({ id, currentAdmin, onNavigate, onBack }) {
       <section className="sp-card profile-head"><div><h2>{officer.firstName} {officer.lastName}</h2><div>
         {[["Email", officer.email], ["Verification Status", statusText(credential?.status)], ["Allied Category", credential?.category], ["Profession", credential?.profession], ["Professional Qualification", credential?.qualification], ["Registration Number", credential?.registrationNumber], ["Training Institution", credential?.institution], ["Submission Version", credential?.version]].map(([label,value]) => <span key={label}>{label}: {value || "Not provided"}</span>)}
       </div></div></section>
-      <EmploymentDocument document={data.employmentDocument} />
+      <EmploymentDocument documents={data.employmentDocuments} />
       {credential?.status === "REJECTED" && <section className="sp-card"><h3>Rejection reason</h3><p>{credential.rejectionReason}</p><p>A fresh certificate or licence is required before resubmission.</p></section>}
       {credential?.status === "PENDING_VERIFICATION" && credential.version > 1 && <p>Resubmitted credentials — version {credential.version}, awaiting review.</p>}
       <section className="sp-card"><h2>Professional Credentials</h2><p>Credential approval does not grant clinical workflow access or public Specialist discovery.</p>
