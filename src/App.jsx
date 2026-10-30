@@ -1,3 +1,4 @@
+import GuestClinicians from './Specialists/GuestClinicians';
 import AlliedMedicalOfficers from "./Specialists/AlliedMedicalOfficers";
 import { Component, useEffect, useState } from "react";
 import AuthenticationApp from "./authentication/AuthenticationApp";
@@ -46,7 +47,7 @@ class ScreenErrorBoundary extends Component {
 
 function App() {
   const [screen, setScreen] = useState(() => new URLSearchParams(window.location.search).get("screen"));
-  const protectedScreen = screen === "allied-medical-officers" || screen === "dashboard" || screen === "role-access" || screen === "patients" || screen === "specialists" || screen === "facilities" || screen === "activities" || screen === "referrals" || screen === "system-control" || screen === "communication" || screen === "profile" || screen === "reports" || screen === "deletion-requests";
+  const protectedScreen = screen === "guest-clinicians" || screen === "allied-medical-officers" || screen === "dashboard" || screen === "role-access" || screen === "patients" || screen === "specialists" || screen === "facilities" || screen === "activities" || screen === "referrals" || screen === "system-control" || screen === "communication" || screen === "profile" || screen === "reports" || screen === "deletion-requests";
   const [dashboardAccess, setDashboardAccess] = useState(
     protectedScreen ? "checking" : "not-needed",
   );
@@ -118,6 +119,8 @@ function App() {
   }
 
   if (screen === "allied-medical-officers" && dashboardAccess === "allowed") return <ScreenErrorBoundary><AlliedMedicalOfficers currentAdmin={currentAdmin} onNavigate={navigate} /></ScreenErrorBoundary>;
+
+  if (screen === "guest-clinicians" && dashboardAccess === "allowed") return <ScreenErrorBoundary><GuestClinicians currentAdmin={currentAdmin} onNavigate={navigate} /></ScreenErrorBoundary>;
 
   if (screen === "specialists" && dashboardAccess === "allowed") {
     return <ScreenErrorBoundary><Specialists currentAdmin={currentAdmin} onNavigate={navigate} /></ScreenErrorBoundary>;

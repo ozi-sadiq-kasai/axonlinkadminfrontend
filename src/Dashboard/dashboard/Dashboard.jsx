@@ -165,7 +165,7 @@ export default function Dashboard({ currentAdmin, onNavigate }) {
               <SidebarItem item={item} expanded={usersExpanded} onClick={() => setUsersExpanded((value) => !value)} />
               {usersExpanded && <div className="sidebar-users__submenu">
                 <button type="button" onClick={() => onNavigate?.("patients")}>Patients</button>
-                <button type="button" onClick={() => onNavigate?.("specialists")}>Specialist</button>
+                <button type="button" onClick={() => onNavigate?.("specialists")}>Specialist</button><button type="button" onClick={() => onNavigate?.("guest-clinicians")}>Guest Clinicians</button>
                 {currentAdmin?.role === "SUPER_ADMIN" && <button type="button" onClick={() => onNavigate?.("allied-medical-officers")}>Allied Medical Officers</button>}
                 <button type="button" onClick={() => onNavigate?.("facilities")}>Facilities</button>
               </div>}

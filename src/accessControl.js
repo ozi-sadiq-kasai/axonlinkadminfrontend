@@ -5,7 +5,7 @@ export const ROLE_SCREEN_ACCESS = Object.freeze({
   AUDITOR: ["dashboard", "users", "system-control", "profile"],
 });
 
-const USER_SCREENS = new Set(["patients", "specialists", "facilities"]);
+const USER_SCREENS = new Set(["patients", "specialists", "facilities", "guest-clinicians"]);
 
 export function permissionScreen(screen) {
   return USER_SCREENS.has(screen) ? "users" : screen;
