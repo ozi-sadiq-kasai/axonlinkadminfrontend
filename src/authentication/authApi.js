@@ -278,3 +278,5 @@ export function getClassificationRequest(id) {
 export function getAppAlliedMedicalOfficers() { return request("/api/app/allied-medical-officers", { authenticated: true }); }
 export function getAppAlliedMedicalOfficer(id) { return request(`/api/app/allied-medical-officers/${encodeURIComponent(id)}`, { authenticated: true }); }
 export function reviewAppAlliedMedicalOfficer(id, details) { return request(`/api/app/allied-medical-officers/${encodeURIComponent(id)}/review`, { method: "POST", body: details, authenticated: true }); }
+
+export function getAppGuestClinicians(page = 1) { return request(`/api/app/guest-clinicians?page=${page}`, { authenticated: true }); }

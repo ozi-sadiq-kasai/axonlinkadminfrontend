@@ -1,0 +1,10 @@
+import React from 'react';
+import {render,screen,fireEvent} from '@testing-library/react';
+import {it,expect,vi} from 'vitest';
+vi.mock('../Specialists/Specialists',()=>({Shell:({children})=><main>{children}</main>}));
+const api=vi.hoisted(()=>vi.fn());
+vi.mock('../authentication/authApi',()=>({getAppGuestClinicians:api}));
+import GuestClinicians from '../Specialists/GuestClinicians';
+import {canAccessScreen} from '../accessControl';
+it('shows original conflicting declarations, operational counts and current status',async()=>{api.mockResolvedValue({items:[{email:'guest@example.test',registrationStatus:'REGISTERED',professionalVerificationStatus:'VERIFIED',contributionCount:3,uniquePatientCount:2,declarations:[{firstName:'Ada',lastName:'One',classification:'GENERALIST',facilityName:'Hospital A'},{firstName:'Ada',lastName:'Two',classification:'SPECIALIST',facilityName:'Hospital B'}]}],hasMore:true});render(<GuestClinicians currentAdmin={{role:'SUPPORT'}} onNavigate={()=>{}}/>);expect(await screen.findByText('guest@example.test')).toBeInTheDocument();expect(screen.getByText(/Ada One/)).toBeInTheDocument();expect(screen.getByText(/Ada Two/)).toBeInTheDocument();expect(screen.getByText(/Medical Officer/)).toBeInTheDocument();expect(screen.getByText(/Successful contributions: 3/)).toBeInTheDocument();expect(screen.queryByRole('button',{name:/patient|record|approve/i})).not.toBeInTheDocument();fireEvent.click(screen.getByRole('button',{name:'Next'}));expect(api).toHaveBeenCalledWith(2)});
+it('role access matches backend metadata permissions',()=>{for(const role of ['SUPER_ADMIN','SUPPORT','AUDITOR'])expect(canAccessScreen(role,'guest-clinicians')).toBe(true);expect(canAccessScreen('ADMIN','guest-clinicians')).toBe(false)});
